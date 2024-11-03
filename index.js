@@ -45,6 +45,11 @@ module.exports.ResponseCode = class ResponseCode{
 
         this.#update()
     }
+    deleteData(){
+        this.data = undefined
+
+        this.#update()
+    }
 
     checkError(){
         if(this.status.has(4000)) return true
