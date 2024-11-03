@@ -7,6 +7,7 @@ module.exports.ResponseCode = class ResponseCode{
     timestamp;
     data;
     trace;
+    result;
 
 
     constructor(){
@@ -17,6 +18,8 @@ module.exports.ResponseCode = class ResponseCode{
     pushCode(...codes){
         // responsecode.pushCode(<code :Number>,...)
         codes.forEach(code => this.status.add(code))
+
+        this.#update()
     }
     pushData(data){
         // responsecode.pushData(<data :Object|Array>)
@@ -24,17 +27,23 @@ module.exports.ResponseCode = class ResponseCode{
         else if(Array.isArray(this.data)) this.data = [...this.data, ...data]
         else if(Object.keys(this.data).length) this.data = {...this.data, ...data}
         else this.data = data
+
+        this.#update()
     }
     pushTrace({code, trace}){
         // responsecode.pushTrace({code: <code :Number>, trace: <custom error handle in front :Any>})
         if(typeof this.trace == "undefined") this.trace = {[code]: trace}
         else this.trace = {...this.trace, ...{[code]: trace}}
+
+        this.#update()
     }
     deleteCode(...codes){
         codes.forEach(code=>{
             this.status.delete(code)
             if(this.trace[code]) delete this.trace[code]
         })
+
+        this.#update()
     }
 
     checkError(){
@@ -49,8 +58,8 @@ module.exports.ResponseCode = class ResponseCode{
         return false
     }
 
-    result(){
-        return {
+    #update(){
+        this.result = {
             status: [...this.status],
             data: typeof this.data != "undefined" ? this.data : undefined,
             trace: typeof this.trace != "undefined" ? this.trace : undefined,
