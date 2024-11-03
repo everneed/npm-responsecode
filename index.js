@@ -63,7 +63,7 @@ class ResponseDictionary{
     dictionary
 
     init(){
-        this.dictionary = JSON.parse(fs.readFileSync("./dictionary.json"))
+        this.dictionary = JSON.parse(fs.readFileSync(__dirname + "/dictionary.json"))
     }
     inject(json){
         /* Usage */
@@ -100,7 +100,7 @@ class ResponseDictionary{
         }
     
         /* Injecting Head Variable */
-        dictionary.current["content"] = JSON.parse(fs.readFileSync("./dictionary.json"))
+        dictionary.current["content"] = JSON.parse(fs.readFileSync(__dirname + "/dictionary.json"))
         dictionary.input["content"] = nullCleanser(JSON.parse(json))
         dictionary.current["key"] = new Set(["issue", "success", "error"])
         dictionary.input["key"] = new Set(Object.keys(dictionary.input.content))
