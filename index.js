@@ -17,6 +17,22 @@ module.exports.ResponseCode = class ResponseCode{
 
     pushCode(...codes){
         // responsecode.pushCode(<code :Number>,...)
+
+        /* smart switch-side detection & templater */
+        if(`${codes[0]}`[0] == 2){
+            this.status.add(2000)
+            for(const code of this.status){
+                if(`${code}`[0] == 2) this.deleteCode(code)
+            }
+        }
+        else if(`${codes[0]}`[0] == 4){
+            this.status.add(4000)
+            for(const code of this.status){
+                if(`${code}`[0] == 4) this.deleteCode(code)
+            }
+        }
+
+        /* actual process */
         codes.forEach(code => this.status.add(code))
 
         this.#update()
@@ -40,6 +56,7 @@ module.exports.ResponseCode = class ResponseCode{
     deleteCode(...codes){
         codes.forEach(code=>{
             this.status.delete(code)
+            console.log(code)
             if(this.trace?.[code]) delete this.trace[code]
         })
 
