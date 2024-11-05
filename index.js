@@ -40,7 +40,7 @@ module.exports.ResponseCode = class ResponseCode{
     deleteCode(...codes){
         codes.forEach(code=>{
             this.status.delete(code)
-            if(this.trace[code]) delete this.trace[code]
+            if(this.trace?.[code]) delete this.trace[code]
         })
 
         this.#update()
@@ -131,7 +131,7 @@ class ResponseDictionary{
         if(dictionary.input.issue > dictionary.current.issue){
             // create dictionary file if
             // input date is higher
-            fs.writeFileSync(`dictionary.json`, JSON.stringify(dictionary.input.content))
+            fs.writeFileSync(__dirname + "/dictionary.json", JSON.stringify(dictionary.input.content))
             return this.dictionary = dictionary.input.content
         }
         else{
