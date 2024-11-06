@@ -35,13 +35,13 @@ module.exports.ResponseCode = class ResponseCode{
         if(`${codes[0]}`[0] == 2){
             this.status.add(2000)
             for(const code of this.status){
-                if(`${code}`[0] == 2) this.deleteCode(code)
+                if(`${code}`[0] == 4) this.deleteCode(code)
             }
         }
         else if(`${codes[0]}`[0] == 4){
             this.status.add(4000)
             for(const code of this.status){
-                if(`${code}`[0] == 4) this.deleteCode(code)
+                if(`${code}`[0] == 2) this.deleteCode(code)
             }
         }
 
