@@ -12,7 +12,7 @@ module.exports.ResponseCode = class ResponseCode{
 
     constructor(){
         this.status = new Set(), 
-        this.timestamp = new Date()
+        this.timestamp = moment().utc().format()
     }
 
     pushCode(...codes){
@@ -85,7 +85,7 @@ module.exports.ResponseCode = class ResponseCode{
             status: [...this.status],
             data: typeof this.data != "undefined" ? this.data : undefined,
             trace: typeof this.trace != "undefined" ? this.trace : undefined,
-            timestamp: this.timestamp
+            timestamp: moment().utc().format()
         }
     }
 }
