@@ -10,9 +10,22 @@ module.exports.ResponseCode = class ResponseCode{
     result;
 
 
-    constructor(){
-        this.status = new Set(), 
+    constructor(object = {}){
+        this.status = new Set()
+
+        if(object.status) this.pushCode(status)
         this.timestamp = moment().utc().format()
+        if(object.data) this.pushData(data)
+        if(object.trace) this.trace = {...this.trace, ...object.trace}
+    }
+    mix(object){
+        /* Usage */
+        // mix(<ResponseCode.result object :Object>)
+
+        if(object.status) this.pushCode(status)
+        this.timestamp = moment().utc().format()
+        if(object.data) this.pushData(data)
+        if(object.trace) this.trace = {...this.trace, ...object.trace}
     }
 
     pushCode(...codes){
