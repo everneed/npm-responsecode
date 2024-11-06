@@ -13,18 +13,18 @@ module.exports.ResponseCode = class ResponseCode{
     constructor(object = {}){
         this.status = new Set()
 
-        if(object.status) this.pushCode(status)
+        if(object.status) this.pushCode(...object.status)
         this.timestamp = moment().utc().format()
-        if(object.data) this.pushData(data)
+        if(object.data) this.pushData(object.data)
         if(object.trace) this.trace = {...this.trace, ...object.trace}
     }
     mix(object){
         /* Usage */
         // mix(<ResponseCode.result object :Object>)
 
-        if(object.status) this.pushCode(status)
+        if(object.status) this.pushCode(...object.status)
         this.timestamp = moment().utc().format()
-        if(object.data) this.pushData(data)
+        if(object.data) this.pushData(object.data)
         if(object.trace) this.trace = {...this.trace, ...object.trace}
     }
 
