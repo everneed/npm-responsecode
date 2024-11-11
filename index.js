@@ -26,6 +26,32 @@ module.exports.ResponseCode = class ResponseCode{
         this.timestamp = moment().utc().format()
         if(object.data) this.pushData(object.data)
         if(object.trace) this.trace = {...this.trace, ...object.trace}
+
+        this.#update()
+    }
+    createNew(object){
+        /* Usage */
+        // mix(<ResponseCode.result object :Object>)
+        
+        this.reset()
+
+        if(object.status) this.pushCode(...object.status)
+        this.timestamp = moment().utc().format()
+        if(object.data) this.pushData(object.data)
+        if(object.trace) this.trace = {...this.trace, ...object.trace}
+
+        this.#update()
+    }
+    reset(){
+        /* Usage */
+        // reset()
+
+        this.status = new Set()
+        this.timestamp = undefined
+        this.data = undefined
+        this.trace = undefined
+
+        this.#update()
     }
 
     pushCode(...codes){
