@@ -17,6 +17,8 @@ module.exports.ResponseCode = class ResponseCode{
         this.timestamp = moment().utc().format()
         if(object.data) this.pushData(object.data)
         if(object.trace) this.trace = {...this.trace, ...object.trace}
+
+        this.#update()
     }
     mix(object){
         /* Usage */
