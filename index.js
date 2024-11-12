@@ -220,7 +220,7 @@ class ResponseDictionary{
         }
     }
     code(enumCode){
-        const result = this.#enumDictionary[enumCode].num || null
+        const result = Number(this.#enumDictionary[enumCode].num) || null
         if(!result) throw new Error(`Invalid response code: ${enumCode}`)
         return result
     }
