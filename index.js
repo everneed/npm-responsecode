@@ -80,7 +80,9 @@ module.exports.ResponseCode = class ResponseCode{
         }
 
         /* actual process */
-        codes.forEach(code => this.status.add(code))
+        for(const code of codes){
+            this.status.add(code)
+        }
 
         this.#update()
     }
@@ -112,11 +114,10 @@ module.exports.ResponseCode = class ResponseCode{
             return Number(x)
         })
 
-        codes.forEach(code=>{
+        for(const code of codes){
             this.status.delete(code)
-            console.log(code)
             if(this.trace?.[code]) delete this.trace[code]
-        })
+        }
 
         this.#update()
     }
@@ -139,9 +140,9 @@ module.exports.ResponseCode = class ResponseCode{
             return Number(x)
         })
         
-        codes.forEach(code=>{
+        for(const code of codes){
             if(this.status.has(code)) return true
-        })
+        }
         return false
     }
 
