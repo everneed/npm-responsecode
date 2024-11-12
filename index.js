@@ -59,6 +59,12 @@ module.exports.ResponseCode = class ResponseCode{
     pushCode(...codes){
         // responsecode.pushCode(<code :Number>,...)
 
+        /* convert ENUMs into NUMs */
+        codes = codes.map(x=>{
+            if(!Number(x)) return dictionary.code(x)
+            return Number(x)
+        })
+
         /* smart switch-side detection & templater */
         if(`${codes[0]}`[0] == 2){
             this.status.add(2000)
@@ -89,12 +95,23 @@ module.exports.ResponseCode = class ResponseCode{
     }
     pushTrace({code, trace}){
         // responsecode.pushTrace({code: <code :Number>, trace: <custom error handle in front :Any>})
+
+        /* convert ENUMs into NUMs */
+        if(!Number(code)) code = dictionary.code(code)
+
         if(typeof this.trace == "undefined") this.trace = {[code]: trace}
         else this.trace = {...this.trace, ...{[code]: trace}}
 
         this.#update()
     }
     deleteCode(...codes){
+
+        /* convert ENUMs into NUMs */
+        codes = codes.map(x=>{
+            if(!Number(x)) return dictionary.code(x)
+            return Number(x)
+        })
+
         codes.forEach(code=>{
             this.status.delete(code)
             console.log(code)
@@ -115,6 +132,13 @@ module.exports.ResponseCode = class ResponseCode{
     }
     hasCode(...codes){
         // hasCode(<code :Number>,...)
+
+        /* convert ENUMs into NUMs */
+        codes = codes.map(x=>{
+            if(!Number(x)) return dictionary.code(x)
+            return Number(x)
+        })
+        
         codes.forEach(code=>{
             if(this.status.has(code)) return true
         })
@@ -132,99 +156,98 @@ module.exports.ResponseCode = class ResponseCode{
 }
 
 class ResponseDictionary{
-    dictionary
+    #numDictionary = {}
+    #enumDictionary = {}
 
+    constructor(){
+        this.init()
+        this.#generateReverse()
+    }
     init(){
-        this.dictionary = JSON.parse(fs.readFileSync(__dirname + "/dictionary.json"))
+        this.#numDictionary = JSON.parse(fs.readFileSync(__dirname + "/dictionary.json"))
     }
     inject(json){
         /* Usage */
         // inject({
         //     issue: <moment().utc() format date :String>
-        //     success:{
-        //         <code :Number>:{
-        //             title: <brief text>
-        //             description: <explanation context>
-        //         }
-        //         ,...
-        //     },
-        //     error:{
-        //         <code :Number>:{
-        //             title: <brief text>
-        //             description: <explanation context>
-        //         }
-        //         ,...
+        //     <code :Number>:{
+        //         title: <brief text>
+        //         description: <explanation context>
         //     }
+        //     ,...
         // })
     
-        /* Define Head Variable */
-        const dictionary = {
-            input:{
-                content: null,
-                key: null,
-                issue: null
-            },
-            current:{
-                content: null,
-                key: null,
-                issue: null
-            }
-        }
-    
-        /* Injecting Head Variable */
-        dictionary.current["content"] = JSON.parse(fs.readFileSync(__dirname + "/dictionary.json"))
-        dictionary.input["content"] = nullCleanser(JSON.parse(json))
-        dictionary.current["key"] = new Set(["issue", "success", "error"])
-        dictionary.input["key"] = new Set(Object.keys(dictionary.input.content))
-        dictionary.current["issue"] = Number(moment(dictionary.current.content.issue).format("x"))
-        dictionary.input["issue"] = Number(moment(dictionary.input.content.issue).format("x"))
-    
-    
+        /* Parse Content */
+        const currentContent = JSON.parse(fs.readFileSync(__dirname + "/dictionary.json"))
+        const inputContent = nullCleanser(JSON.parse(json))
+
+
         /* Validation */
-        if(!notNull(dictionary.input.content)) throw "injectDictionary() parameter received value of equal null"
-        if(dictionary.current.key.intersection(dictionary.input.key).size < 3) throw "injectDictionary() wrong structure on json"
+        if(!notNull(inputContent)) throw "injectDictionary() parameter received value of equal null"
+        for(const code in inputContent){
+            if(code == "issue") continue
+
+            if(!/^[2|4]{1}([0-9]){3}$/.test(code)) throw `injectDictionary() invalid code structure of ${code} on json`
+            
+            const key = new Set(Object.keys(inputContent[code]))
+            const must = new Set(["enum", "title", "description"])
+
+            if(must.intersection(key).size < 3) throw `injectDictionary() invalid key structure of ${code} on json`
+        }
+
     
         /* Ingest Config File */
         // compare issue date
-        if(dictionary.input.issue > dictionary.current.issue){
+        if(moment(inputContent.issue).utc().format() > moment(currentContent.issue).utc().format()){
             // create dictionary file if
             // input date is higher
-            fs.writeFileSync(__dirname + "/dictionary.json", JSON.stringify(dictionary.input.content))
-            return this.dictionary = dictionary.input.content
+            fs.writeFileSync(__dirname + "/dictionary.json", JSON.stringify(inputContent))
+            return this.#numDictionary = inputContent
         }
         else{
-            return this.dictionary = dictionary.current.content
+            return this.#numDictionary = currentContent
         }
     
     
+    }
+    #generateReverse(){
+        for(const num in this.#numDictionary){
+            this.#enumDictionary[this.#numDictionary[num].enum] = {
+                num: num,
+                title: this.#numDictionary[num].title,
+                description: this.#numDictionary[num].description
+            }
+        }
+    }
+    code(enumCode){
+        const result = this.#enumDictionary[enumCode].num || null
+        if(!result) throw new Error(`Invalid response code: ${enumCode}`)
+        return result
+    }
+    enum(numCode){
+        const result = this.#numDictionary[numCode].enum || null
+        if(!result) throw new Error(`Invalid response code: ${numCode}`)
+        return result
     }
     title(code){
         let result
-    
-        switch(`${code}`[0]){
-            case "2": result = this.dictionary.success[code] || null
-            break;
-            case "4": result =  this.dictionary.error[code] || null
-            break;
-            default: result = null
-        }
+
+        if(Number(code)) result = this.#numDictionary[code].title
+        else if(!Number(code)) result = this.#enumDictionary[code].title
+        else result = null
     
         if(!result) throw new Error(`Invalid response code: ${code}`)
-        return result.title
+        return result
     }
     description(code){
         let result
-    
-        switch(`${code}`[0]){
-            case "2": result = this.dictionary.success[code] || null
-            break;
-            case "4": result = this.dictionary.error[code] || null
-            break;
-            default: result = null
-        }
+
+        if(Number(code)) result = this.#numDictionary[code].description
+        else if(!Number(code)) result = this.#enumDictionary[code].description
+        else result = null
     
         if(!result) throw new Error(`Invalid response code: ${code}`)
-        return result.description
+        return result
     }
 }
 
