@@ -22,7 +22,7 @@ module.exports.ResponseCode = class ResponseCode{
     }
     mix(object){
         /* Usage */
-        // mix(<ResponseCode.result object :Object>)
+        // mix(<ResponseCode.result object|ResponseCode instance :Object>)
 
         if(object.status) this.pushCode(...object.status)
         this.timestamp = moment().utc().format()
@@ -33,7 +33,7 @@ module.exports.ResponseCode = class ResponseCode{
     }
     createNew(object){
         /* Usage */
-        // mix(<ResponseCode.result object :Object>)
+        // createNew(<ResponseCode.result object|ResponseCode instance :Object>)
         
         this.reset()
 
