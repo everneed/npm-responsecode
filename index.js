@@ -1,4 +1,4 @@
-const fs = require("fs")
+const path = require("path")
 const moment = require("moment")
 const { nullCleanser, notNull } = require("@everneed/helper")
 
@@ -159,57 +159,38 @@ module.exports.ResponseCode = class ResponseCode{
 class ResponseDictionary{
     #numDictionary = {}
     #enumDictionary = {}
+    #configPath = null
 
     constructor(){
         this.init()
         this.#generateReverse()
     }
     init(){
-        this.#numDictionary = JSON.parse(fs.readFileSync(__dirname + "/dictionary.json"))
-    }
-    inject(json){
-        /* Usage */
-        // inject({
-        //     issue: <moment().utc() format date :String>
-        //     <code :Number>:{
-        //         title: <brief text>
-        //         description: <explanation context>
-        //     }
-        //     ,...
-        // })
-    
-        /* Parse Content */
-        const currentContent = JSON.parse(fs.readFileSync(__dirname + "/dictionary.json"))
-        const inputContent = nullCleanser(JSON.parse(json))
-
+        let json
+        if(!this.#configPath) json = require("../../../src/config/responsecode.json")
+        else{
+            const fs = require("fs")
+            json = fs.readFileSync(this.#configPath)
+        }
 
         /* Validation */
-        if(!notNull(inputContent)) throw "injectDictionary() parameter received value of equal null"
-        for(const code in inputContent){
-            if(code == "issue") continue
-
+        if(!notNull(json)) throw "injectDictionary() parameter received value of equal null"
+        for(const code in json){
             if(!/^[2|4]{1}([0-9]){3}$/.test(code)) throw `injectDictionary() invalid code structure of ${code} on json`
             
-            const key = new Set(Object.keys(inputContent[code]))
+            const key = new Set(Object.keys(json[code]))
             const must = new Set(["enum", "title", "description"])
 
             if(must.intersection(key).size < 3) throw `injectDictionary() invalid key structure of ${code} on json`
         }
 
-    
-        /* Ingest Config File */
-        // compare issue date
-        if(moment(inputContent.issue).utc().format() > moment(currentContent.issue).utc().format()){
-            // create dictionary file if
-            // input date is higher
-            fs.writeFileSync(__dirname + "/dictionary.json", JSON.stringify(inputContent))
-            return this.#numDictionary = inputContent
-        }
-        else{
-            return this.#numDictionary = currentContent
-        }
-    
-    
+        this.#numDictionary = json
+    }
+    config(configPath){
+        this.#configPath = path.join("../../..", configPath)
+
+        /* Re-init */
+        this.init()
     }
     #generateReverse(){
         for(const num in this.#numDictionary){
