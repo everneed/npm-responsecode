@@ -1,6 +1,6 @@
 const path = require("path")
 const moment = require("moment")
-const { nullCleanser, notNull } = require("@everneed/helper")
+const { nullCleanser, notNull, pipe } = require("@everneed/helper")
 
 module.exports.ResponseCode = class ResponseCode{
     status;
@@ -167,10 +167,21 @@ class ResponseDictionary{
     }
     init(){
         let json
-        if(!this.#configPath) json = require("../../../responsecode.json")
+        if(!this.#configPath){
+            try{
+                json = require("../../../responsecode.json")
+            }
+            catch(err){
+                json = {2000:{enum: "SUCCESS", title: "Success", description: "Success header"}}
+            }
+        }
         else{
             const fs = require("fs")
-            json = fs.readFileSync(this.#configPath)
+            json = pipe(this.#configPath)
+            .then(relativePath=> path.resolve(__dirname, relativePath))
+            .then(truePath=> fs.readFileSync(truePath))
+            .then(json=> JSON.parse(json))
+            .result
         }
 
         /* Validation */
