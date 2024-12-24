@@ -167,7 +167,7 @@ class ResponseDictionary{
     }
     init(){
         let json
-        if(!this.#configPath) json = require("../../../src/config/responsecode.json")
+        if(!this.#configPath) json = require("../../../responsecode.json")
         else{
             const fs = require("fs")
             json = fs.readFileSync(this.#configPath)
