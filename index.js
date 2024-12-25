@@ -196,6 +196,7 @@ class ResponseDictionary{
         }
 
         this.#numDictionary = json
+        this.#generateReverse()
     }
     config(configPath){
         this.#configPath = path.join("../../..", configPath)
